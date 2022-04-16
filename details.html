@@ -171,15 +171,15 @@
             }
 
             let rightNow = new Date()
-            console.log("RIGHTNOW: " + rightNow)
+            // console.log("RIGHTNOW: " + rightNow)
             let year = rightNow.getFullYear()
-            console.log("year: " + year)
+            // console.log("year: " + year)
             let month = rightNow.getMonth() + 1
             month = ("0" + month).slice(-2)
-            console.log("month: " + month)
+            // console.log("month: " + month)
             let day = rightNow.getDate()
             day = ("0" + day).slice(-2)
-            console.log("day: " + day)
+            // console.log("day: " + day)
             let myDate = year + "-" + month + "-" + day
             console.log("myDate: " + myDate)
             $("#date").attr("value", myDate)
@@ -190,6 +190,7 @@
               $(".alert").hide()
               console.log("#confirm-order clicked")
 
+              // FAILED ALERT
               if ($("#hotdog").is(":checked")) {
                 $("#failed-alert").fadeIn("slow")
               } else {
@@ -204,11 +205,16 @@
               $("#failed-alert").fadeIn("slow")
             })
 
+            // CLOSE ALERT
+            $("#close-alert").click(function () {
+              $(".alert").fadeOut("fast")
+            })
+
             console.log("DOCUMENT READY")
           })
         </script>
       </div>
     </div>
-    <script src="./js/script.js"></script>
+    <script src="./js/phoneFormat.js"></script>
   </body>
 </html>
