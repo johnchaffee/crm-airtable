@@ -1,3 +1,3 @@
-# twilio-flex-crm
+# crm-airtable
  
-Sample CRM that runs in browser and can be embedded in Flex container.
+Sample CRM that runs in browser and uses Airtable as a database. Can be embedded in Flex CRMcontainer.
