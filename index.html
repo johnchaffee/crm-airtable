@@ -21,7 +21,7 @@
           <input
             type="text"
             class="form-control float-right mt-3"
-            style="width: 300px"
+            style="width: 200px"
             id="myInput"
             placeholder="Search contacts..."
           />
@@ -31,46 +31,63 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Email</th>
+              <th>Company</th>
               <th>Phone</th>
             </tr>
           </thead>
           <tbody id="contacts-table-body"></tbody>
         </table>
-
+        <!-- Load sample contacts array -->
         <script src="./js/sample-contacts.js"></script>
-
+        <script src="./js/cookies.js"></script>
+        <script src="./js/phoneFormat.js"></script>
+        <!-- Axios library -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script>
           $(document).ready(function () {
-            console.log(
-              'document ready: fetch("https://randomuser.me/api/?results=25&nat=us"'
-            )
+            console.log("index.html > script > DOCUMENT.READY")
+            // load airtableApiKey and airtableBaseId from cookie.js
+            const airtableTableName = "contacts"
+            console.log("airtableTableName:", airtableTableName)
 
-            fetch("https://randomuser.me/api/?results=25&nat=us")
-              .then((response) => response.json())
-              .then((result) => {
-                console.log("RESULT.RESULTS")
-                console.log(result.results)
+            // GET RECORDS
+            const getRecords = async () => {
+              console.log("GET RECORDS")
+              const options = {
+                url: `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}`,
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${airtableApiKey}`,
+                },
+              }
+              console.log("options:", options)
 
-                if (result.results.length > 0) {
-                  contacts = result.results
-                } else {
-                  alert(result.response)
-                  console.log("else: " + result.response)
-                }
-              })
-              .catch((error) => {
-                console.log("CATCH")
+              try {
+                const { data } = await axios(options)
+                const { records } = data
+                // console.log("records:", records)
+                contacts = records
+                console.log("contacts:", contacts)
+                // records.forEach(function (record) {
+                //   console.log("Retrieved", record.fields.name)
+                //   console.log("id:", record.id)
+                //   console.log(record.fields)
+                // })
+              } catch (err) {
                 console.log(
-                  ".catch JSON.stringify(error, undefined, 2): \n" +
-                    JSON.stringify(error, undefined, 2)
+                  "ERROR FETCHING CONTACTS FROM AIRTABLE, USING SAMPLE CONTACTS\n" + err
                 )
-                console.log("error", error)
-              })
-              .finally(() => {
-                console.log("FINALLY")
+                // alert(err)
+              }
+            }
 
+            getRecords()
+              .then(function () {
+                console.log("GET RECORDS THEN BUILD TABLE")
                 buildTable(contacts)
+              })
+              .catch(function (err) {
+                console.log(err)
               })
 
             $("#myInput").on("keyup", function () {
@@ -86,9 +103,9 @@
             $("#contacts").ready(function () {
               let start = Date.now()
               contacts.sort(function (a, b) {
-                var nameA = a.name.first + a.name.last || ""
+                var nameA = a.fields.first + a.fields.last || ""
                 nameA = nameA.toUpperCase()
-                var nameB = b.name.first + b.name.last || ""
+                var nameB = b.fields.first + b.fields.last || ""
                 nameB = nameB.toUpperCase()
                 if (nameA < nameB) {
                   return -1
@@ -103,27 +120,28 @@
               let tableRows = ""
 
               contacts.forEach((contact) => {
-                let number = removeSpaces(contact.phone)
-                let email = contact.email
-                let fullName = (
-                  contact.name.first +
-                  " " +
-                  contact.name.last
-                ).trim()
+                let fullName = contact.fields.name
+                let company = contact.fields.company
+                let email = contact.fields.email
+                let number = removeSpaces(contact.fields.phone)
 
                 tableRows +=
                   "<tr>" +
-                  '<td name="fullName"><a class="text-body" href="./details.html?nat=us&seed=' +
-                  formatNumber(number) +
+                  '<td name="fullName"><a class="text-body" href="./details.html?id=' +
+                  contact.id +
                   '">' +
                   fullName +
                   "</a></td>" +
-                  '<td name="email">' +
-                  email +
-                  "</td>" +
-                  '<td name="phone">' +
+                  '<td name="company"><a class="text-body" href="./details.html?id=' +
+                  contact.id +
+                  '">' +
+                  company +
+                  "</a></td>" +
+                  '<td name="phone"><a class="text-body" href="./details.html?id=' +
+                  contact.id +
+                  '">' +
                   formatNumber(number) +
-                  "</td>" +
+                  "</a></td>" +
                   "</tr>"
               })
               $("#contacts-table-body").html(tableRows)
@@ -132,6 +150,5 @@
         </script>
       </div>
     </div>
-    <script src="./js/phoneFormat.js"></script>
   </body>
 </html>

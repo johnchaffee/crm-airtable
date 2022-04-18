@@ -1,74 +1,85 @@
 // COOKIES
-// Store session key in cookie
-let username = getCookie("username");
-let session = getCookie("session");
+let airtableApiKey = getCookie("airtableApiKey")
+let airtableBaseId = getCookie("airtableBaseId")
 
 function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(";");
+  console.log(`getCoookie(${cname})`)
+  let name = cname + "="
+  let decodedCookie = decodeURIComponent(document.cookie)
+  let ca = decodedCookie.split(";")
   for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
+    let c = ca[i]
     while (c.charAt(0) == " ") {
-      c = c.substring(1);
+      c = c.substring(1)
     }
     if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
+      console.log(`${cname}: ` + c.substring(name.length, c.length))
+      return c.substring(name.length, c.length)
     }
   }
-  return "";
+  return ""
 }
 
 function setCookie(cname, cvalue, exdays) {
-  let d = new Date();
-  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-  let expires = "expires=" + d.toGMTString();
+  console.log("setCookie")
+  let d = new Date()
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+  let expires = "expires=" + d.toGMTString()
   // If testing on localhost, use SameSite=Lax
   if (location.protocol == "https:") {
-    document.cookie = `${cname}=${cvalue}; ${expires}; path=/; SameSite=None; Secure`;
+    document.cookie = `${cname}=${cvalue}; ${expires}; path=/; SameSite=None; Secure`
   } else {
-    document.cookie = `${cname}=${cvalue}; ${expires}; path=/; SameSite=Lax`;
+    document.cookie = `${cname}=${cvalue}; ${expires}; path=/; SameSite=Lax`
   }
-  console.log("setCookie: " + `${cname}=${cvalue};`);
+  console.log("setCookie: " + `${cname}=${cvalue};`)
 }
 
 function deleteCookie(cname) {
-  console.log("function deleteCookie");
+  console.log("deleteCookie")
   // If testing on localhost, use SameSite=Lax
   if (location.protocol == "https:") {
-    document.cookie = `${cname}=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure`;
+    document.cookie = `${cname}=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure`
   } else {
-    document.cookie = `${cname}=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+    document.cookie = `${cname}=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`
   }
 }
 
 function checkCookie() {
-  if (session != "" && session != null && username != "" && username != null) {
-    console.log("You are logged in as: " + username);
-    console.log("Your session key is: " + session);
-    return true;
+  console.log("checkCookie")
+  if (
+    airtableBaseId != "" &&
+    airtableBaseId != null &&
+    airtableApiKey != "" &&
+    airtableApiKey != null
+  ) {
+    console.log("Airtable API Key: " + airtableApiKey)
+    console.log("Airtable Base ID: " + airtableBaseId)
+    return true
   } else {
-    console.log("You are not logged in");
-    return false;
+    console.log("Airtable API Key or Base ID cookie not found")
+    return false
   }
 }
 
-function updateSessionField() {
-  checkCookie();
-  console.log("checkCookie");
-  // Set session field from cookie
-  $("#session").val(session);
-  // $('#swagger-ui [data-property-name="session"] input[type="text"]').val(session);
-  console.log("set session value");
-  // Set username field from cookie
-  $("#username").val(username);
-}
+// function updateAirtableBaseIdField() {
+//   console.log("updateAirtableBaseIdField")
+//   checkCookie()
+//   // Set airtableBaseId field from cookie
+//   $("#airtableBaseId").val(airtableBaseId)
+//   // $('#swagger-ui [data-property-name="airtableBaseId"] input[type="text"]').val(airtableBaseId);
+//   console.log("set airtableBaseId value")
+//   // Set airtableApiKey field from cookie
+//   $("#airtableApiKey").val(airtableApiKey)
+//   console.log("set airtableApiKey value")
+// }
 
-// Get session key from cookie and store it in session field
-$(document).ready(function () {
-  $("#session").ready(function () {
-    console.log("#session.ready");
-    updateSessionField();
-  });
-});
+// // Get airtableBaseId key from cookie and store it in airtableBaseId field
+// $(document).ready(function () {
+//   $("#airtableBaseId").ready(function () {
+//     console.log("#airtableBaseId.ready")
+//     updateAirtableBaseIdField()
+//   })
+// })
 // END COOOKIES
+
+console.log("Done loading cookies.js");

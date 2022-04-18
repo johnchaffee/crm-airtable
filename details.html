@@ -20,7 +20,9 @@
           <div class="col">
             <div class="pt-3">
               <div id="contact-details" class="border p-4 bg-light">
-                <p>Put contact details here</p>
+                <p>
+                  <!-- Put contact details here -->
+                </p>
               </div>
             </div>
           </div>
@@ -67,13 +69,18 @@
             </div>
           </div>
         </div>
-
+        <script src="./js/sample-contacts.js"></script>
+        <script src="./js/cookies.js"></script>
+        <script src="./js/phoneFormat.js"></script>
+        <!-- Axios library -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script>
           $(document).ready(function () {
+            console.log("details.html > script > DOCUMENT.READY")
             const params = window.location.search
             console.log("PARAMS: " + params)
-            const seed = getParam("seed")
-            console.log("getParams SEED: " + seed)
+            const id = getParam("id")
+            console.log("getParams ID: " + id)
             let rides = ["Economy", "Deluxe", "Carpool"]
             let ride = rides[Math.floor(Math.random() * rides.length)]
             let ratings = ["3 Stars", "4 Stars", "5 Stars"]
@@ -92,129 +99,133 @@
               console.log("Query param %s not found", paramName)
             }
 
-            let apiUrl =
-              "https://randomuser.me/api/?nat=us&seed=" +
-              encodeURIComponent(seed)
-            if (seed == "Anonymous") {
-              apiUrl = "https://randomuser.me/api/?nat=us"
-            }
-            console.log("APIURL: " + apiUrl)
+            // load airtableApiKey and airtableBaseId from cookie.js
+            const airtableTableName = "contacts"
+            console.log("airtableTableName:", airtableTableName)
 
-            fetch(apiUrl)
-              .then((response) => response.json())
-              .then((result) => {
-                console.log("RESULT.RESULTS")
-                console.log(result.results)
+            // Load first sample contact from ../js/sample-contacts.js
+            contact = contacts[0]
 
-                if (result.results.length > 0) {
-                  contacts = result.results
-                  console.log("contacts = RESULT.RESULTS")
-                  console.log(contacts)
-                } else {
-                  alert(result.response)
-                  console.log("else: " + result.response)
-                }
-              })
-              .catch((error) => {
-                console.log("CATCH")
-                console.log(
-                  ".catch JSON.stringify(error, undefined, 2): \n" +
-                    JSON.stringify(error, undefined, 2)
-                )
-                console.log("error", error)
-              })
-              .finally(() => {
-                console.log("FINALLY")
-
-                buildTable(contacts)
-              })
-
-            function buildTable(contacts) {
-              console.log("BUILDTABLE")
-              console.log(contacts)
-              let contact = contacts[0]
-              console.log(contact)
-              let fullName = contact.name.first + " " + contact.name.last
-              $("#contact-details").ready(function () {
-                let contactDetails = ""
-                contactDetails +=
-                  '<p><img src="' +
-                  contact.picture.large +
-                  '" alt="Picture"></p>' +
-                  "<h3>" +
-                  fullName +
-                  "</h3>" +
-                  "<p>Ph: " +
-                  formatNumber(contact.phone) +
-                  "<br>Email: " +
-                  contact.email +
-                  "</p>" +
-                  "<p>" +
-                  contact.location.street.number +
-                  ". " +
-                  contact.location.street.name +
-                  "<br>" +
-                  contact.location.city +
-                  ", " +
-                  contact.location.state +
-                  " " +
-                  contact.location.postcode +
-                  "</p>" +
-                  "<hr>" +
-                  "<p>" +
-                  notes +
-                  "<p>"
-                console.log("CONTACT DETAILS:")
-                console.log(contactDetails)
-                $("#contact-details").html(contactDetails)
-              })
-            }
-
-            let rightNow = new Date()
-            // console.log("RIGHTNOW: " + rightNow)
-            let year = rightNow.getFullYear()
-            // console.log("year: " + year)
-            let month = rightNow.getMonth() + 1
-            month = ("0" + month).slice(-2)
-            // console.log("month: " + month)
-            let day = rightNow.getDate()
-            day = ("0" + day).slice(-2)
-            // console.log("day: " + day)
-            let myDate = year + "-" + month + "-" + day
-            console.log("myDate: " + myDate)
-            $("#date").attr("value", myDate)
-
-            $("#confirm-order").click(function (event) {
-              event.preventDefault()
-              $("#confirm-order").attr("disabled", true)
-              $(".alert").hide()
-              console.log("#confirm-order clicked")
-
-              // FAILED ALERT
-              if ($("#hotdog").is(":checked")) {
-                $("#failed-alert").fadeIn("slow")
-              } else {
-                $("#success-alert").fadeIn("slow")
+            // GET RECORD BY ID
+            const getRecordById = async (id) => {
+              console.log("GET RECORD BY ID")
+              const options = {
+                url: `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}/${id}`,
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${airtableApiKey}`,
+                },
               }
-              $("#confirm-order").attr("disabled", false)
-            })
+              console.log("options:", options)
+              try {
+                const { data } = await axios(options)
+                const record = data
+                contact = record
+                console.log("CONTACT:", contact)
+              } catch (err) {
+                console.log(
+                  "ERROR FETCHING CONTACT FROM AIRTABLE, USING SAMPLE CONTACT"
+                )
+                console.error(err)
+              }
+            }
 
-            $("#hotdog").click(function (event) {
-              $(".alert").hide()
-              console.log("#hotdog clicked")
+            getRecordById(id)
+              .then(function () {
+                console.log("GET RECORD BY ID THEN BUILD VIEW")
+                buildView(contact)
+              })
+              .catch(function (err) {
+                console.log(err)
+              })
+
+            $("#myInput").on("keyup", function () {
+              let value = $(this).val().toLowerCase()
+
+              $("#contacts-table-body tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+              })
+            })
+          })
+
+          function buildView(contact) {
+            console.log("BUILD VIEW")
+            console.log(contact)
+            let fullName = contact.fields.name
+            $("#contact-details").ready(function () {
+              let contactDetails = ""
+              contactDetails +=
+                '<p><img width="200px" src="' +
+                contact.fields.image[0].url +
+                '" alt="Picture"></p>' +
+                "<h3>" +
+                fullName +
+                "</h3>" +
+                "<p>Ph: " +
+                formatNumber(contact.fields.phone) +
+                "<br>Email: " +
+                contact.fields.email +
+                "</p>" +
+                "<p>" +
+                "Fake street name" +
+                "<br>" +
+                "City" +
+                ", " +
+                "State" +
+                " " +
+                "Zip" +
+                "</p>" +
+                "<hr>" +
+                "<p>" +
+                contact.fields.notes +
+                "<p>"
+              console.log("CONTACT DETAILS HTML:")
+              console.log(contactDetails)
+              $("#contact-details").html(contactDetails)
+            })
+          }
+
+          let rightNow = new Date()
+          // console.log("RIGHTNOW: " + rightNow)
+          let year = rightNow.getFullYear()
+          // console.log("year: " + year)
+          let month = rightNow.getMonth() + 1
+          month = ("0" + month).slice(-2)
+          // console.log("month: " + month)
+          let day = rightNow.getDate()
+          day = ("0" + day).slice(-2)
+          // console.log("day: " + day)
+          let myDate = year + "-" + month + "-" + day
+          console.log("myDate: " + myDate)
+          $("#date").attr("value", myDate)
+
+          $("#confirm-order").click(function (event) {
+            event.preventDefault()
+            $("#confirm-order").attr("disabled", true)
+            $(".alert").hide()
+            console.log("#confirm-order clicked")
+
+            // FAILED ALERT
+            if ($("#hotdog").is(":checked")) {
               $("#failed-alert").fadeIn("slow")
-            })
+            } else {
+              $("#success-alert").fadeIn("slow")
+            }
+            $("#confirm-order").attr("disabled", false)
+          })
 
-            // CLOSE ALERT
-            $("#close-alert").click(function () {
-              $(".alert").fadeOut("fast")
-            })
+          $("#hotdog").click(function (event) {
+            $(".alert").hide()
+            console.log("#hotdog clicked")
+            $("#failed-alert").fadeIn("slow")
+          })
 
-            console.log("DOCUMENT READY")
+          // CLOSE ALERT
+          $("#close-alert").click(function () {
+            $(".alert").fadeOut("fast")
           })
         </script>
       </div>
     </div>
-    <script src="./js/phoneFormat.js"></script>
   </body>
 </html>

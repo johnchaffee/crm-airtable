@@ -35,4 +35,4 @@ function formatNumber(str) {
 }
 // END PHONE NUMBER FORMATTING FUNCTIONS
 
-console.log("Done loading scripts.js");
+console.log("Done loading phoneFormat.js");
