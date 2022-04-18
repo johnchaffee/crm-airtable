@@ -8,3 +8,5 @@ In order to fetch data from Airtable, you must store the following variables as 
 - `airtableBaseId` - Your Aitable Base ID
 
 If those varialbes are not present, default sample contacts will be rendered instead.
+
+View the [demo app here](https://johnchaffee.wiki/crm-airtable/).
